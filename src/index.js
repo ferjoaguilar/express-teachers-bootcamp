@@ -1,8 +1,9 @@
+import "dotenv/config"
 import express from 'express'
 
 // CREAR INSTANCIA 
 const app = express()
-const PORT = 8000
+const PORT = process.env.PORT
 
 // ESPECIFICAR JSON
 app.use(express.json());
