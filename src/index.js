@@ -1,6 +1,7 @@
 import "dotenv/config"
 import express from 'express'
 import userRouter from "./routes/users.routes.js"
+import {apiKeyMiddleware} from "./middleware/apikey.middleware.js"
 
 // CREAR INSTANCIA 
 const app = express()
@@ -8,6 +9,9 @@ const PORT = process.env.PORT
 
 // ESPECIFICAR JSON
 app.use(express.json());
+
+// MIDDLEWARE
+app.use(apiKeyMiddleware)
 
 // ENDPOINT
 app.use("/", userRouter)
