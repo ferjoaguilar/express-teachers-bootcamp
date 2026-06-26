@@ -1,6 +1,7 @@
 import "dotenv/config"
 import express from 'express'
 import userRouter from "./routes/users.routes.js"
+import authRouter from "./routes/auth.router.js"
 import {apiKeyMiddleware} from "./middleware/apikey.middleware.js"
 
 // CREAR INSTANCIA 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(apiKeyMiddleware)
 
 // ENDPOINT
+app.use("/auth", authRouter)
 app.use("/", userRouter)
 
 // CREAR EL SERVER
