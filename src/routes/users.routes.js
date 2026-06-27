@@ -74,13 +74,20 @@ userRouter.put("/update/:id", async(req, res) => {
     }
 })
 
-userRouter.delete("/delete/:id", (req, res) => {
+userRouter.delete("/delete/:id", async(req, res) => {
     const { id } = req.params
-    res.status(200).json({message: `El usuario con ID: ${id} se ha eliminado`})
+    try {
+        const deletedStudent = await prisma.student.delete({
+            where: {id: parseInt(id)}
+        })
+        res.status(200).json({success: true, data: deletedStudent})
+    } catch (error) {
+        if(error.code === "P2025"){
+            res.status(404).json({success: false, message: "El id seleccionado no fue encontrado"})
+        }
+        res.status(500).json({success: false, message: "Error interno del servidor"})
+    }
 })
 
-userRouter.get("/test", (req, res) => {
-    res.status(200).json({ mensaje: "Hola a la formacion de docentes del MINEDUCYT como estas?🙌"})
-})
 
 export default userRouter
