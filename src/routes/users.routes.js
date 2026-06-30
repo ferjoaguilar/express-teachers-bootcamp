@@ -1,7 +1,28 @@
 import {Router} from 'express'
 import prisma from "../lib/prisma.js"
+import {z} from 'zod'
+import bcrypt from 'bcryptjs'
 
 const userRouter = Router()
+
+const studentSchema = z.object({
+    studentCode: z.string().min(5, "El codigo de estudiante debe tener minimo 5 caracteres"),
+    firstName: z.string().min(3, "El nombre debe tener minimo 3 caracteres").max(20, "El nombre es muy largo"),
+    lastName: z.string().min(3, "El apellido debe tener minimo 3 caracteres").max(20, "El apellido es muy largo"),
+    email: z.email("El email no tiene un formato invalido"),
+    password: z.string().min(8, "La clave es muy corta").max(24, "La clave es muy larga"),
+    phone: z.string().optional(),
+    birthDate: z.string().optional()
+})
+
+const validate = (schema) => (req, res, next) => {
+    const result = schema.safeParse(req.body)
+    if(!result.success){
+        res.status(400).json({success: false, errors: result.error.flatten().fieldErrors})
+    }
+    req.validatedData = result.data
+    next()
+}
 
 userRouter.get("/", async (req, res) => {
     // BUSCAR EN LA BASE DE DATOS
@@ -16,34 +37,26 @@ userRouter.get("/", async (req, res) => {
   
 })
 
-userRouter.post("/create", async (req, res) => {
+userRouter.post("/create",validate(studentSchema), async (req, res) => {
     // EXTRACCION DE LOS DATOS
    const {studentCode, firstName, lastName, email, password, phone, birthDate} = req.body
-
-   // VALIDACION DE LOS DATOS
-   if (!studentCode || !firstName || !lastName || !email || !password){
-    return res.status(400).json({
-        success: false,
-        message: "Faltan datos: studentCode, firstName, lastName, email, password son requeridos"
-    })
-   }
-
+   
    try {
-    
+    const hashedPassword = await bcrypt.hash(password, 12)
     const newStudent = await prisma.student.create({
        data: {
             studentCode: studentCode,
             firstName: firstName,
             lastName: lastName,
             email: email,
-            password: password,
+            password: hashedPassword,
             phone: phone,
             birthDate: birthDate ? new Date(birthDate):null
        }
     })
     res.status(201).json({success: true, message: "Nuevo alumno registrado exitosamente"})
    } catch (error) {
-    //console.log(error);
+    console.log(error);
     res.status(500).json({success: false, message: "Error interno del servidor"})
    }
 

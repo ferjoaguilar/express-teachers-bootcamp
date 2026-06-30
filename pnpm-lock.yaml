@@ -213,6 +213,9 @@ importers:
       '@prisma/client':
         specifier: ^7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -222,6 +225,9 @@ importers:
       pg:
         specifier: ^8.22.0
         version: 8.22.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       nodemon:
         specifier: ^3.1.14
@@ -422,6 +428,10 @@ packages:
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
+
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
+    hasBin: true
 
   better-result@2.9.2:
     resolution: {integrity: sha512-WIFoBPCdnTOdk9inkE1ZRvCZ4P0CpSkAiLlchC65N7n9DcjZ3NhqkBOlafzpOVnO8ixyi37kicmSJ3ENhPZl7Q==}
@@ -1081,6 +1091,9 @@ packages:
   zeptomatch@2.1.0:
     resolution: {integrity: sha512-KiGErG2J0G82LSpniV0CtIzjlJ10E04j02VOudJsPyPwNZgGnRKQy7I1R7GMyg/QswnE4l7ohSGrQbQbjXPPDA==}
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
 snapshots:
 
   '@electric-sql/pglite-socket@0.1.1(@electric-sql/pglite@0.4.1)':
@@ -1287,6 +1300,8 @@ snapshots:
   aws-ssl-profiles@1.1.2: {}
 
   balanced-match@4.0.4: {}
+
+  bcryptjs@3.0.3: {}
 
   better-result@2.9.2: {}
 
@@ -1928,3 +1943,5 @@ snapshots:
     dependencies:
       grammex: 3.1.12
       graphmatch: 1.1.1
+
+  zod@4.4.3: {}
