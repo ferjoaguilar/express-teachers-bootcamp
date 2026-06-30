@@ -48,7 +48,7 @@ userRouter.post("/create",validate(studentSchema), async (req, res) => {
             studentCode: studentCode,
             firstName: firstName,
             lastName: lastName,
-            email: email,
+            email: email.trim().lowercase(),
             password: hashedPassword,
             phone: phone,
             birthDate: birthDate ? new Date(birthDate):null
