@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import prisma from "../lib/prisma.js"
+import supabase from "../lib/supabase.js"
+import { authMiddleware } from "../middleware/auth.middleware.js"
 
 const userRouter = Router()
 
@@ -27,9 +28,14 @@ const validate = (schema) => (req, res, next) => {
     next()
 }
 
-userRouter.get("/", async (_req, res) => {
+userRouter.get("/", authMiddleware, async (_req, res) => {
     try {
-        const students = await prisma.student.findMany()
+        const { data: students, error } = await supabase
+            .from("students")
+            .select("*")
+
+        if (error) throw error
+
         res.status(200).json({ success: true, data: students })
     } catch (error) {
         res.status(500).json({ success: false, message: "Error interno del servidor" })
@@ -41,72 +47,94 @@ userRouter.post("/create", validate(studentSchema), async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10)
-        const newStudent = await prisma.student.create({
-            data: {
+        const { data: newStudent, error } = await supabase
+            .from("students")
+            .insert({
                 studentCode,
                 firstName,
                 lastName,
                 email,
                 password: hashedPassword,
                 phone: phone ?? null,
-                birthDate: birthDate ? new Date(birthDate) : null,
+                birthDate: birthDate ? new Date(birthDate).toISOString() : null,
+            })
+            .select()
+            .single()
+
+        if (error) {
+            // 23505 = violación de índice único en Postgres
+            if (error.code === "23505") {
+                return res.status(409).json({
+                    success: false,
+                    message: "El campo email ya existe"
+                })
             }
-        })
+            throw error
+        }
+
         res.status(201).json({ success: true, data: newStudent })
     } catch (error) {
-        if (error.code === "P2002") {
-            return res.status(409).json({
-                success: false,
-                message: "El campo email ya existe"
-            })
-        }
         res.status(500).json({ success: false, message: "Error interno del servidor" })
     }
 })
 
-userRouter.put("/update/:id", validate(studentSchema), async (req, res) => {
+userRouter.put("/update/:id", authMiddleware, validate(studentSchema), async (req, res) => {
     const { id } = req.params
     const { studentCode, firstName, lastName, email, password, phone, birthDate } = req.validatedData
 
     try {
-        const updatedStudent = await prisma.student.update({
-            where: { id: parseInt(id) },
-            data: {
+        const { data: updatedStudent, error } = await supabase
+            .from("students")
+            .update({
                 studentCode,
                 firstName,
                 lastName,
                 email,
                 password,
                 phone: phone ?? null,
-                birthDate: birthDate ? new Date(birthDate) : null,
-            }
-        })
-        res.status(200).json({ success: true, data: updatedStudent })
-    } catch (error) {
-        if (error.code === "P2025") {
+                birthDate: birthDate ? new Date(birthDate).toISOString() : null,
+                updatedAt: new Date().toISOString(),
+            })
+            .eq("id", parseInt(id))
+            .select()
+            .maybeSingle()
+
+        if (error) throw error
+
+        if (!updatedStudent) {
             return res.status(404).json({
                 success: false,
                 message: `El estudiante con ID: ${id} no se encuentra en la base de datos`
             })
         }
+
+        res.status(200).json({ success: true, data: updatedStudent })
+    } catch (error) {
         res.status(500).json({ success: false, message: "Error interno del servidor" })
     }
 })
 
-userRouter.delete("/delete/:id", async (req, res) => {
+userRouter.delete("/delete/:id", authMiddleware, async (req, res) => {
     const { id } = req.params
     try {
-        const deletedStudent = await prisma.student.delete({
-            where: { id: parseInt(id) }
-        })
-        res.status(200).json({ success: true, data: deletedStudent })
-    } catch (error) {
-        if (error.code === "P2025") {
+        const { data: deletedStudent, error } = await supabase
+            .from("students")
+            .delete()
+            .eq("id", parseInt(id))
+            .select()
+            .maybeSingle()
+
+        if (error) throw error
+
+        if (!deletedStudent) {
             return res.status(404).json({
                 success: false,
                 message: `El estudiante con ID: ${id} no se encuentra en la base de datos`
             })
         }
+
+        res.status(200).json({ success: true, data: deletedStudent })
+    } catch (error) {
         res.status(500).json({ success: false, message: "Error interno del servidor" })
     }
 })

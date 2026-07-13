@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import prisma from '../lib/prisma.js'
+import supabase from '../lib/supabase.js'
 
 const authRouter = Router()
 
@@ -27,7 +27,13 @@ authRouter.post('/login', validate(loginSchema), async (req, res) => {
     const { email, password } = req.validatedData
 
     try {
-        const student = await prisma.student.findUnique({ where: { email } })
+        const { data: student, error } = await supabase
+            .from('students')
+            .select('*')
+            .eq('email', email)
+            .maybeSingle()
+
+        if (error) throw error
 
         if (!student || !(await bcrypt.compare(password, student.password))) {
             return res.status(401).json({ success: false, message: 'Credenciales inválidas' })
