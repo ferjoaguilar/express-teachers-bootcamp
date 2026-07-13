@@ -7,7 +7,7 @@ import { apiKeyMiddleware } from "./middleware/apikey.middleware.js"
 
 // CREAR INSTANCIA
 const app = express()
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3000
 
 // CORS abierto: API pública, acepta cualquier dominio
 app.use(cors({
@@ -25,7 +25,6 @@ app.use(apiKeyMiddleware)
 // ENDPOINT
 app.use("/auth", authRouter)
 app.use("/", userRouter)
-app.use("/auth", authRouter)
 
 // CREAR EL SERVER
 app.listen(PORT, () => {
