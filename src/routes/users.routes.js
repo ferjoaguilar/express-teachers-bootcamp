@@ -64,9 +64,10 @@ userRouter.post("/create", validate(studentSchema), async (req, res) => {
         if (error) {
             // 23505 = violación de índice único en Postgres
             if (error.code === "23505") {
+                const field = error.details?.includes("studentCode") ? "studentCode" : "email"
                 return res.status(409).json({
                     success: false,
-                    message: "El campo email ya existe"
+                    message: `El campo ${field} ya existe`
                 })
             }
             throw error
@@ -99,7 +100,17 @@ userRouter.put("/update/:id", authMiddleware, validate(studentSchema), async (re
             .select()
             .maybeSingle()
 
-        if (error) throw error
+        if (error) {
+            // 23505 = violación de índice único en Postgres
+            if (error.code === "23505") {
+                const field = error.details?.includes("studentCode") ? "studentCode" : "email"
+                return res.status(409).json({
+                    success: false,
+                    message: `El campo ${field} ya existe`
+                })
+            }
+            throw error
+        }
 
         if (!updatedStudent) {
             return res.status(404).json({
