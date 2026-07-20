@@ -154,4 +154,32 @@ userRouter.get("/test", (req, res) => {
     res.status(200).json({ mensaje: "Hola a la formacion de docentes del MINEDUCYT como estas?🙌" })
 })
 
+userRouter.get("/subjects", authMiddleware, async (_req, res) => {
+    try {
+        const { data: subjects, error } = await supabase
+            .from("subjects")
+            .select("*")
+
+        if (error) throw error
+
+        res.status(200).json({ success: true, data: subjects })
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error interno del servidor" })
+    }
+})
+
+userRouter.get("/grades", authMiddleware, async (_req, res) => {
+    try {
+        const { data: grades, error } = await supabase
+            .from("grades")
+            .select("*, students(id, studentCode, firstName, lastName), subjects(id, code, name)")
+
+        if (error) throw error
+
+        res.status(200).json({ success: true, data: grades })
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error interno del servidor" })
+    }
+})
+
 export default userRouter
